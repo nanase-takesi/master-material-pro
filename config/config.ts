@@ -59,7 +59,6 @@ export default defineConfig({
             {
               path: '/welcome',
               name: 'welcome',
-              icon: 'smile',
               component: './Welcome',
             },
             {
@@ -79,8 +78,18 @@ export default defineConfig({
               ],
             },
             {
+              name: 'business',
+              path: '/business',
+              routes: [
+                {
+                  name: 'rotation',
+                  path: '/business/rotation',
+                  component: './business/rotation',
+                },
+              ],
+            },
+            {
               name: 'list.table-list',
-              icon: 'table',
               path: '/list',
               component: './ListTableList',
             },
