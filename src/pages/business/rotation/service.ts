@@ -29,6 +29,12 @@ export async function deleteRotation(id: number) {
   })
 }
 
+export async function cancelDeleteRotation(id: number) {
+  return request(`/api/mac/rotation/${id}/un_delete`, {
+    method: 'PATCH',
+  });
+}
+
 export async function bratchDeleteRotation(params: { ids: number[] }) {
   return request('/api/mac/rotation/batch_delete', {
     method: 'DELETE',

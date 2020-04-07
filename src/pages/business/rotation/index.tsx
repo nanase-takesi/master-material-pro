@@ -8,7 +8,7 @@ import { SorterResult } from 'antd/es/table/interface';
 
 import RotationForm from './components/RotationForm';
 import { TableListItem, State } from './data.d';
-import { queryRotationList, addRotation, updateRotation, deleteRotation, bratchDeleteRotation } from './service';
+import { queryRotationList, addRotation, updateRotation, deleteRotation, cancelDeleteRotation, bratchDeleteRotation } from './service';
 
 const valueEnum = {
   0: { text: '已作废', status: 'Error' },
@@ -60,6 +60,17 @@ const handleDelete = async (id: number) => {
       message.error('删除失败')
     }
   });
+}
+
+const handleCancelDelete = async (id: number) => {
+  await cancelDeleteRotation(id).then(response => {
+    const { code } = response;
+    if (code === 200) {
+      message.success('恢复成功');
+    } else {
+      message.error('恢复失败');
+    }
+  })
 }
 
 /**
@@ -187,7 +198,12 @@ const TableList: React.FC<{}> = () => {
               }}
             >
               <Button type="link" danger>作废</Button>
-            </Popconfirm></> : null}
+            </Popconfirm></> : <Button type="link" onClick={async () => {
+              await handleCancelDelete(record.id);
+              if (actionRef.current) {
+                actionRef.current.reload();
+              }
+            }}>取消删除</Button>}
         </>
       ),
     },
