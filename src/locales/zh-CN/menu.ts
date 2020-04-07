@@ -16,6 +16,7 @@ export default {
   'menu.exception.500': '500',
   'menu.business': '运营管理',
   'menu.business.rotation': '轮播图管理',
+  'menu.business.referral': '推荐商品管理',
   'menu.form': '表单页',
   'menu.form.basic-form': '基础表单',
   'menu.form.step-form': '分步表单',

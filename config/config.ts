@@ -86,6 +86,11 @@ export default defineConfig({
                   path: '/business/rotation',
                   component: './business/rotation',
                 },
+                {
+                  name: 'referral',
+                  path: '/business/referral',
+                  component: './business/referral',
+                },
               ],
             },
             {
