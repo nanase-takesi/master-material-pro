@@ -17,6 +17,7 @@ export default {
   'menu.business': '运营管理',
   'menu.business.rotation': '轮播图管理',
   'menu.business.referral': '推荐商品管理',
+  'menu.business.notice': '系统公告',
   'menu.form': '表单页',
   'menu.form.basic-form': '基础表单',
   'menu.form.step-form': '分步表单',

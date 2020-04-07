@@ -91,6 +91,11 @@ export default defineConfig({
                   path: '/business/referral',
                   component: './business/referral',
                 },
+                {
+                  name: 'notice',
+                  path: 'business/notice',
+                  component: './business/notice',
+                },
               ],
             },
             {

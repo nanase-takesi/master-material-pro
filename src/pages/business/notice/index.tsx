@@ -1,18 +1,13 @@
 import { PlusOutlined, QuestionCircleOutlined } from '@ant-design/icons';
-import { Button, Divider, message, Input, Popconfirm, Avatar } from 'antd';
+import { Button, Divider, message, Popconfirm } from 'antd';
 import React, { useState, useRef } from 'react';
 import { PageHeaderWrapper } from '@ant-design/pro-layout';
 import ProTable, { ProColumns, ActionType } from '@ant-design/pro-table';
 import { SorterResult } from 'antd/es/table/interface';
 
-import RotationForm from './components/RotationForm';
+import NoticeForm from './components/NoticeForm';
 import { TableListItem, State } from './data.d';
-import { queryRotationList, addRotation, updateRotation, deleteRotation, cancelDeleteRotation, bratchDeleteRotation } from './service';
-
-const valueEnum = {
-  0: { text: '已作废', status: 'Error' },
-  1: { text: '使用中', status: 'Success' },
-};
+import { querySystemNotice, updateSystemNotice, addSystemNotice, deleteSystemNotice, unDeleteSystemNotice } from './service';
 
 /**
  * 添加节点
@@ -21,77 +16,70 @@ const valueEnum = {
 const handleAdd = async (fields: TableListItem) => {
   const hide = message.loading('正在添加');
   try {
-    await addRotation({ ...fields });
+    await addSystemNotice({ ...fields }).then(response => {
+      const { code } = response;
+      if (code === 200) {
+        message.success('添加成功');
+      } else {
+        message.error('添加失败请重试！');
+      }
+    });
     hide();
-    message.success('添加成功');
     return true;
   } catch (error) {
     hide();
-    message.error('添加失败请重试！');
     return false;
   }
 };
 
+/**
+ * 更新节点
+ * @param fields
+ */
 const handleUpdate = async (id?: number, fields?: TableListItem) => {
-  const hide = message.loading('正在提交');
-  await updateRotation(id, fields).then(response => {
+  const hide = message.loading('正在配置');
+  try {
+    await updateSystemNotice(id, fields).then(response => {
+      const { code } = response;
+      if (code === 200) {
+        message.success('配置成功');
+      } else {
+        message.error('配置失败请重试！');
+      }
+    });
+    hide();
+    return true;
+  } catch (error) {
+    hide();
+    return false;
+  }
+};
+
+const handleDelete = async (id: number) => {
+  const hide = message.loading('正在删除');
+  await deleteSystemNotice(id).then(response => {
     const { code } = response;
     if (code === 200) {
-      message.success('更新成功');
+      message.success('删除成功');
     } else {
-      message.error('更新失败');
+      message.error('删除失败');
     }
   })
   hide();
-  return true;
-}
-
-/**
- * 删除轮播图
- * @param id id
- */
-const handleDelete = async (id: number) => {
-  await deleteRotation(id).then(response => {
-    const { code } = response
-    if (code === 200) {
-      message.success('删除成功')
-    } else {
-      message.error('删除失败')
-    }
-  });
 }
 
 const handleCancelDelete = async (id: number) => {
-  await cancelDeleteRotation(id).then(response => {
+  const hide = message.loading('正在取消');
+  await unDeleteSystemNotice(id).then(response => {
     const { code } = response;
     if (code === 200) {
-      message.success('恢复成功');
+      message.success('取消删除成功');
     } else {
-      message.error('恢复失败');
+      message.error('取消删除失败');
     }
   })
+  hide();
 }
-
-/**
- *  批量删除轮播图
- * @param selectedRows selectedRows
- */
-const handleBatchDelete = async (selectedRows: TableListItem[]) => {
-  const hide = message.loading('正在删除');
-  if (!selectedRows) return true;
-  try {
-    await bratchDeleteRotation({
-      ids: selectedRows.map((row) => row.id),
-    });
-    hide();
-    message.success('删除成功，即将刷新');
-    return true;
-  } catch (error) {
-    hide();
-    message.error('删除失败，请重试');
-    return false;
-  }
-};
 
 const TableList: React.FC<{}> = () => {
   const [sorter, setSorter] = useState<string>('');
@@ -101,23 +89,15 @@ const TableList: React.FC<{}> = () => {
   const actionRef = useRef<ActionType>();
   const columns: ProColumns<TableListItem>[] = [
     {
-      title: '轮播内容/名称',
+      title: '公告内容（简介）',
       dataIndex: 'name',
       align: 'center',
       rules: [
         {
           required: true,
-          message: '轮播内容/名称为必填项',
+          message: '公告内容（简介）为必填项',
         },
       ],
-    },
-    {
-      title: '轮播图片',
-      dataIndex: 'imageUrl',
-      align: 'center',
-      width: '80px',
-      hideInSearch: true,
-      renderText: (val: string) => <Avatar shape="square" src={`${process.env.REACT_UPLOAD_URL}/${val}`} style={{ cursor: 'pointer' }} />,
     },
     {
       title: '跳转链接',
@@ -126,44 +106,21 @@ const TableList: React.FC<{}> = () => {
       hideInSearch: true,
     },
     {
-      title: '排序值（越大越靠前）',
-      dataIndex: 'sort',
-      align: 'center',
-      sorter: true,
-      hideInSearch: true,
-      renderText: (val: number) => `${val}`,
-    },
-    {
       title: '状态',
       dataIndex: 'state',
-      hideInForm: true,
       align: 'center',
-      valueEnum: valueEnum,
+      hideInForm: true,
+      valueEnum: {
+        0: { text: '已作废', status: 'Error' },
+        1: { text: '使用中', status: 'Success' },
+      },
     },
     {
       title: '创建时间',
       dataIndex: 'createTime',
       align: 'center',
-      sorter: true,
       valueType: 'dateTime',
       hideInForm: true,
-      hideInSearch: true,
-      renderFormItem: (item, { defaultRender, ...rest }, form) => {
-        const status = form.getFieldValue('state');
-        if (`${status}` === '0') {
-          return false;
-        }
-        if (`${status}` === '3') {
-          return <Input {...rest} placeholder="请输入异常原因！" />;
-        }
-        return defaultRender(item);
-      },
-    },
-    {
-      title: '备注',
-      dataIndex: 'remark',
-      valueType: 'textarea',
-      hideInTable: true,
       hideInSearch: true,
     },
     {
@@ -202,7 +159,7 @@ const TableList: React.FC<{}> = () => {
               if (actionRef.current) {
                 actionRef.current.reload();
               }
-            }}>取消删除</Button>}
+            }}>恢复</Button>}
         </>
       ),
     },
@@ -229,20 +186,6 @@ const TableList: React.FC<{}> = () => {
           </Button>,
           selectedRows && selectedRows.length > 0 && (
             <>
-              <Popconfirm
-                title="确定要删除所选中的数据吗?"
-                cancelText="取消"
-                okText="确定"
-                okType="danger"
-                icon={<QuestionCircleOutlined style={{ color: 'red' }} />}
-                onConfirm={async () => {
-                  await handleBatchDelete(selectedRows);
-                  action.reload();
-                }}
-              >
-                <Button type="danger">批量删除</Button>
-              </Popconfirm>
-              <Divider type="vertical" />
             </>
           ),
         ]}
@@ -251,12 +194,12 @@ const TableList: React.FC<{}> = () => {
             已选择 <a style={{ fontWeight: 600 }}>{selectedRowKeys.length}</a> 项&nbsp;&nbsp;
           </div>
         )}
-        request={(params) => queryRotationList(params)}
+        request={(params) => querySystemNotice(params)}
         columns={columns}
         rowSelection={{}}
       />
-      <RotationForm
-        title="新建轮播图"
+      <NoticeForm
+        title="添加系统公告"
         onCancel={() => handleModalVisible(false)}
         modalVisible={createModalVisible}
         onSubmit={async (value) => {
@@ -270,8 +213,8 @@ const TableList: React.FC<{}> = () => {
         }}
       />
 
-      <RotationForm
-        title="更新轮播图"
+      <NoticeForm
+        title="更新系统公告"
         modalVisible={updateModalVisible}
         values={currentFormValues}
         onCancel={() => {
