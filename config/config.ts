@@ -99,9 +99,15 @@ export default defineConfig({
               ],
             },
             {
-              name: 'list.table-list',
-              path: '/list',
-              component: './ListTableList',
+              name: 'product',
+              path: '/product',
+              routes: [
+                {
+                  name: 'brand',
+                  path: '/product/brand',
+                  component: './product/brand',
+                },
+              ],
             },
             {
               component: './404',
